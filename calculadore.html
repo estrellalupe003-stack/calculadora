@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Simbólica (JavaScript)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #2e3440; color: white;}
+        .calculator { background-color: #3b4252; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); width: 400px; }
+        .display { width: 100%; height: 50px; background-color: #4c566a; border: none; color: #eceff4; font-size: 1.8em; text-align: right; padding: 5px 10px; margin-bottom: 15px; box-sizing: border-box; border-radius: 5px; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .mode-select { margin-bottom: 15px; padding: 10px; font-size: 1em; border-radius: 5px; width: 100%; }
+        .result { margin-top: 20px; padding: 15px; background-color: #a3be8c; color: #2e3440; border-radius: 5px; text-align: center; font-size: 1.1em; font-weight: bold; }
+        button { padding: 15px; font-size: 1.1em; border: none; border-radius: 5px; cursor: pointer; background-color: #5e81ac; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <h1>Cálculo Real (JavaScript + Math.js)</h1>
+        
+        <input type="text" id="expression" placeholder="Introduce f(x) (ej: x^3 + 2*x)" class="display">
+        
+        <select id="mode" class="mode-select">
+            <option value="derivada">Calcular Derivada (d/dx)</option>
+            <option value="limite">Simular Límite (x→a)</option> 
+            <option value="evaluar">Evaluar Función (f(a))</option>
+        </select>
+            </select>
+
+        <input type="text" id="value" placeholder="Valor para x (ej: 2) o vacío para derivada" class="display">
+
+        <button onclick="calculate()" style="margin-top: 15px; width: 100%; background-color: #bf616a;">CALCULAR</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+
+        <p style="margin-top: 15px; font-size: 0.8em; color: #d8dee9;">Nota: Los botones numéricos son decorativos. Escribe la expresión manualmente.</p>
+
+        <div class="buttons" style="margin-top: 15px;">
+             <button>7</button><button>8</button><button>9</button><button>/</button>
+             <button>4</button><button>5</button><button>6</button><button>*</button>
+             <button>1</button><button>2</button><button>3</button><button>-</button>
+             <button>0</button><button>.</button><button>x</button><button>+</button>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const expression = document.getElementById('expression').value.trim();
+            const mode = document.getElementById('mode').value;
+            const value = document.getElementById('value').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.style.display = 'block';
+
+            if (!expression) {
+                resultDiv.innerHTML = "ERROR: Por favor, ingresa una expresión.";
+                return;
+            }
+
+            try {
+                if (mode === 'derivada') {
+                    // CÁLCULO REAL DE DERIVADA
+                    const node = math.parse(expression);
+                    const derivative = math.derivative(node, 'x'); // d/dx
+                    
+                    resultDiv.innerHTML = `d/dx de (${expression}) es: <b>${derivative.toString()}</b>`;
+
+                } else if (mode === 'limite') {
+                    if (!value) {
+                        resultDiv.innerHTML = "ERROR: Ingresa el valor 'a' al que tiende el límite (x→a).";
+                        return;
+                    }
+                    
+                    // CÁLCULO DE LÍMITE (Simulación Numérica)
+                    const a = parseFloat(value);
+                    const scope_plus = { x: a + 0.000001 }; // Nos acercamos por la derecha
+                    
+                    if (isNaN(a)) {
+                        resultDiv.innerHTML = "ERROR: El valor debe ser un número.";
+                        return;
+                    }
+
+                    const limit_value = math.evaluate(expression, scope_plus);
+                    
+                    if (Math.abs(limit_value) > 1e15) { // Si es un número muy grande, asumimos infinito
+                        resultDiv.innerHTML = `Límite de f(x) cuando x→${value} tiende a: <b>∞ (Infinito)</b>`;
+                    } else {
+                        // Mostramos el valor aproximado con 6 decimales
+                        resultDiv.innerHTML = `Límite de f(x) cuando x→${value} es aproximadamente: <b>${limit_value.toFixed(6)}</b>`;
+                    }
+
+                } else if (mode === 'evaluar') {
+                    if (!value) {
+                        resultDiv.innerHTML = "ERROR: Por favor, ingresa un valor para 'x'.";
+                        return;
+                    }
+                    // CÁLCULO REAL DE EVALUACIÓN
+                    const scope = { x: parseFloat(value) };
+                    const evaluated = math.evaluate(expression, scope);
+                    
+                    resultDiv.innerHTML = `f(${value}) = <b>${evaluated}</b>`;
+                }
+
+            } catch (e) {
+                resultDiv.innerHTML = `ERROR DE SINTAXIS: Asegúrate de usar * para multiplicación y ^ para potencias.`;
+                console.error(e);
+            }
+        }
+    </script>
+        
+    </script>
+    
+</body>
+</html>
